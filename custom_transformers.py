@@ -37,6 +37,37 @@ class RandomPixelCutout:
         new_label = label* remaining/total_pixels
         return Image.fromarray(img), new_label
     
+class SquareCutout:
+    
+    def __init__(self, size):
+        '''
+        Class performing square cutout and returning new Image object after transformation and new soft label.
+        :params  size: size of the square cutout in pixels.
+        '''
+        self.size = size
+
+    def __call__(self, img, label):
+        '''
+        Method for performing transformations.
+        : params img : Image object 
+        : param label : original tabel for the provided image. Should be 0-1.
+        returns new Image with a new soft label based on % of remaining original pixels
+        '''
+        img = np.array(img)
+        h,w,_ = img.shape
+        # randomly choosing x,y coordinates of the top left corner of the square cutout
+        x = np.random.randint(0, w - self.size)
+        y = np.random.randint(0, h - self.size)
+
+        img[y:y+self.size, x:x+self.size, :] = 0 #change pixels to black
+
+        #calculate new label based on remaining fraction
+        total_pixels = h*w
+        num_to_remove = self.size**2
+        remaining = total_pixels - num_to_remove
+        new_label = label* remaining/total_pixels
+        return Image.fromarray(img), new_label
+    
 
 class SoftLabelDataset(Dataset):
     
