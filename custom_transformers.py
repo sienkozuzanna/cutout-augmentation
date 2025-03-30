@@ -6,25 +6,14 @@ import torch
 import torch.nn.functional as F
 
 class RandomPixelCutout:
-    def __init__(self, max_cutout_size, color=None):
+    def __init__(self, max_cutout_size, color=False):
         '''
         Class performing random pixels cutout and returning new Image object after transformation and new soft label.
         :params  max_cutout_size: maximm percent value of pixels that can be cut out.
-        :params  color: color of the cutout in RGB format. (if not provided - black)
+        :params  color: if false - black, if True - random colors.
         '''
         self.max_cutout_size = max_cutout_size
-        # color validation
-        if color is not None:
-            if not isinstance(color, tuple) or len(color) != 3:
-                raise ValueError("Color must be a tuple of 3 integers representing RGB values.")
-            if any(c < 0 or c > 255 for c in color):
-                raise ValueError("RGB values must be between 0 and 255.")
-            else:
-                self.color = color
-        # if color is not provided - black
-        else:
-            self.color = (0, 0, 0)
-
+        self.color = color
     def __call__(self, img, label):
         '''
         Method for performing transformations.
@@ -42,7 +31,16 @@ class RandomPixelCutout:
         y_coords = np.random.randint(0, h, size=num_to_remove)
         x_coords = np.random.randint(0, w, size=num_to_remove)
 
-        img[y_coords, x_coords, :] = self.color #change pixels to selected color
+        if self.color:
+            # if color is provided - change pixels to selected color
+            for i in range(num_to_remove):
+                # generate random color
+                r = np.random.randint(0, 256)
+                g = np.random.randint(0, 256)
+                b = np.random.randint(0, 256)
+                img[y_coords[i], x_coords[i], :] = (r, g, b)
+        else:
+            img[y_coords, x_coords, :] = 0 #change pixels to black
 
         #calculate new label based on remaining fraction
         remaining = total_pixels - num_to_remove
@@ -51,26 +49,16 @@ class RandomPixelCutout:
     
 class SquareCutout:
     
-    def __init__(self, size, color=None):
+    def __init__(self, size, color=False):
         '''
         Class performing square cutout and returning new Image object after transformation and new soft label.
         :params  size: size of the square cutout in pixels.
-        :params  color: color of the square cutout in RGB format. (if not provided - black)
+        :params  color: if fals e - black, if True - random colors.
         '''
         self.size = size
-        # chceking if the color is a tuple of 3 integers representing RGB values
-        if color is not None:
-            if not isinstance(color, tuple) or len(color) != 3:
-                raise ValueError("Color must be a tuple of 3 integers representing RGB values.")
-            if any(c < 0 or c > 255 for c in color):
-                raise ValueError("RGB values must be between 0 and 255.")
-            else:
-                self.color = color
-        # if color is not provided - black
-        else:
-            self.color = (0, 0, 0)
+        self.color = color
+    
         
-
     def __call__(self, img, label):
         '''
         Method for performing transformations.
@@ -87,8 +75,17 @@ class SquareCutout:
         # randomly choosing x,y coordinates of the top left corner of the square cutout
         x = np.random.randint(0, w - self.size)
         y = np.random.randint(0, h - self.size)
-
-        img[y:y+self.size, x:x+self.size, :] = self.color #change pixels to selected color
+        if self.color:
+            # if color is True - randomly generate color
+            for i in range(x, x+self.size):
+                for j in range(y, y+self.size):
+                    # generate random color
+                    r = np.random.randint(0, 256)
+                    g = np.random.randint(0, 256)
+                    b = np.random.randint(0, 256)
+                    img[i, j, :] = (r,g,b)
+        else:       
+            img[y:y+self.size, x:x+self.size, :] = 0 #change pixels to black
 
         #calculate new label based on remaining fraction
         total_pixels = h*w
