@@ -94,7 +94,48 @@ class SquareCutout:
         new_label = label* remaining/total_pixels
         return Image.fromarray(img), new_label
     
+class CircleCutout:
+    def __init__(self, radius=None, max_size_ratio=0.3, color=None):
+        '''
+        Class performing circle cutout and returning new Image object after transformation and new soft label.
+        :params  radius: radius of the circle cutout in pixels.
+        :param max_size_ratio: maximum size of the circle relative to image dimensions (0-1)
+        :params  color: if None - black cutout
+        '''
+        self.radius=radius
+        self.max_size_ratio = max_size_ratio
+        self.color = color if color is not None else (0, 0, 0) #black cutout by default
 
+    def __call__(self, img, label):
+        img = np.array(img)
+        h,w,_ = img.shape
+        max_possible_radius = int(min(h, w) * self.max_size_ratio / 2)
+
+        if self.radius is None:
+            radius = random.randint(5, max_possible_radius)
+        else:
+            radius = min(self.radius, max_possible_radius)
+            if radius != self.radius:
+                print(f"Warning: Reduced radius from {self.radius} to {radius} to fit image")
+
+        #center of circle cutout and ensuring it fits in image size
+        x_center = random.randint(radius, w - radius - 1) if w > 2*radius else w // 2
+        y_center = random.randint(radius, h - radius - 1) if h > 2*radius else h // 2
+
+        #open grid for generating circle coordinates
+        y, x = np.ogrid[:h, :w]
+        #generating circle mask of pixels from equation (x-x_center)^2+(y-y_center)^2<=radius^2
+        mask = (x - x_center)**2 + (y - y_center)**2 <= radius**2
+        img[mask] = self.color
+
+        #adjusting label
+        total_pixels = h * w
+        num_removed = np.sum(mask)
+        new_label = label * (1 - num_removed / total_pixels)
+        
+        return Image.fromarray(img), new_label
+        
+    
 class PolygonCutout:
     def __init__(self, max_vertices=12, min_vertices=3, max_size_ratio=0.3, color=None):
         '''
