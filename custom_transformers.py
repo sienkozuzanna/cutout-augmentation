@@ -95,6 +95,81 @@ class SquareCutout:
         return Image.fromarray(img), new_label
     
 
+class PolygonCutout:
+    def __init__(self, max_vertices=12, min_vertices=3, max_size_ratio=0.3, color=None):
+        '''
+        Class performing polygon cutout with configurable maximum number of vertices.
+        
+        :param max_vertices: maximum number of vertices for the polygon (default 12)
+        :param max_size_ratio: maximum size of the polygon relative to image dimensions (0-1)
+        :param min_vertices: minimum number of vertices (default 3 for triangles)
+        :param color: RGB color for the cutout. Default is black.
+        '''
+
+        self.max_vertices = max(max_vertices, min_vertices)
+        self.min_vertices = max(min_vertices, 3)
+        self.max_size_ratio = max_size_ratio
+        self.color = color if color is not None else (0, 0, 0) #black cutout by default
+
+    def _is_inside_polygon(self, x, y, polygon):
+        '''
+        Ray-casting algorithm to check if a point (x, y) is inside the polygon.
+        '''
+        num_vertices = len(polygon)
+        inside = False
+        x0, y0 = polygon[-1]
+
+        for i in range(num_vertices):
+            x1, y1 = polygon[i]
+            if ((y1 > y) != (y0 > y)) and (x < (x0 - x1) * (y - y1) / (y0 - y1) + x1):
+                inside = not inside
+            x0, y0 = x1, y1
+
+        return inside
+
+    def __call__(self, img, label):
+        '''
+        Method for performing transformations.
+        : params img : Image object 
+        : param label : original tabel for the provided image. Should be 0-1.
+        returns new Image with a new soft label based on % of remaining original pixels
+        '''
+        img = np.array(img)
+        h,w,_ = img.shape
+        
+        vertices=random.randint(self.min_vertices, self.max_vertices)
+        max_size = int(min(h, w) * self.max_size_ratio) #maximum possible size of cutout
+        center_x = random.randint(max_size, w - max_size) if w > 2*max_size else w // 2
+        center_y = random.randint(max_size, h - max_size) if h > 2*max_size else h // 2
+
+        points=[]
+        angle_step=2*np.pi/vertices #angle between vertices in radial coordinates
+        base_angle = random.uniform(0, 2 * np.pi) #random start point
+
+        for i in range(vertices):
+            #start point+theoretical point on circle + noise
+            angle = base_angle + i * angle_step + random.uniform(-angle_step/3, angle_step/3)
+            #every point has random distance between center and max size of cutout
+            distance = random.uniform(max_size * 0.3, max_size * 0.7)
+
+            #radial coordinates to cartesian coordinates
+            x, y = center_x + distance * np.cos(angle), center_y + distance * np.sin(angle)
+            #ensuring that we wont exceed image size
+            x, y = max(0, min(w-1, x)), max(0, min(h-1, y))
+            points.append((x, y))
+
+        num_removed = 0
+        for y in range(h):
+            for x in range(w):
+                if self._is_inside_polygon(x, y, points):
+                    img[y, x, :] = self.color
+                    num_removed += 1
+
+        total_pixels = h * w
+        remaining = total_pixels - num_removed
+        new_label = label * (remaining / total_pixels)
+
+        return Image.fromarray(img), new_label
 
 
 class SoftLabelDataset(Dataset):
