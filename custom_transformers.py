@@ -95,16 +95,19 @@ class SquareCutout:
         return Image.fromarray(img), new_label
     
 class CircleCutout:
-    def __init__(self, radius=None, max_size_ratio=0.3, color=None):
+    def __init__(self, radius=None, max_size_ratio=0.3, color=None, random_color=False):
         '''
         Class performing circle cutout and returning new Image object after transformation and new soft label.
         :params  radius: radius of the circle cutout in pixels.
         :param max_size_ratio: maximum size of the circle relative to image dimensions (0-1)
         :params  color: if None - black cutout
+        :params random_color: if True apply random colors in masked pixels
         '''
+
         self.radius=radius
         self.max_size_ratio = max_size_ratio
         self.color = color if color is not None else (0, 0, 0) #black cutout by default
+        self.random_color=random_color
 
     def __call__(self, img, label):
         img = np.array(img)
@@ -126,7 +129,13 @@ class CircleCutout:
         y, x = np.ogrid[:h, :w]
         #generating circle mask of pixels from equation (x-x_center)^2+(y-y_center)^2<=radius^2
         mask = (x - x_center)**2 + (y - y_center)**2 <= radius**2
-        img[mask] = self.color
+
+        if self.random_color:
+            # generating random colors only for masked pixels
+            random_colors = np.random.randint(0, 256, size=(np.sum(mask), 3), dtype=np.uint8)
+            img[mask] = random_colors
+        else:
+            img[mask] = self.color
 
         #adjusting label
         total_pixels = h * w
@@ -137,7 +146,7 @@ class CircleCutout:
         
     
 class PolygonCutout:
-    def __init__(self, max_vertices=12, min_vertices=3, max_size_ratio=0.3, color=None):
+    def __init__(self, max_vertices=12, min_vertices=3, max_size_ratio=0.3, color=None, random_color=False):
         '''
         Class performing polygon cutout with configurable maximum number of vertices.
         
@@ -145,12 +154,14 @@ class PolygonCutout:
         :param max_size_ratio: maximum size of the polygon relative to image dimensions (0-1)
         :param min_vertices: minimum number of vertices (default 3 for triangles)
         :param color: RGB color for the cutout. Default is black.
+        :param random_color: if True apply random colors to masked pixels
         '''
 
         self.max_vertices = max(max_vertices, min_vertices)
         self.min_vertices = max(min_vertices, 3)
         self.max_size_ratio = max_size_ratio
         self.color = color if color is not None else (0, 0, 0) #black cutout by default
+        self.random_color=random_color
 
     def _is_inside_polygon(self, x, y, polygon):
         '''
@@ -196,14 +207,21 @@ class PolygonCutout:
             #radial coordinates to cartesian coordinates
             x, y = center_x + distance * np.cos(angle), center_y + distance * np.sin(angle)
             #ensuring that we wont exceed image size
-            x, y = max(0, min(w-1, x)), max(0, min(h-1, y))
-            points.append((x, y))
+            points.append((max(0, min(w-1, x)), max(0, min(h-1, y))))
 
         num_removed = 0
         for y in range(h):
             for x in range(w):
                 if self._is_inside_polygon(x, y, points):
-                    img[y, x, :] = self.color
+                    if self.random_color:
+                        # generating random color for each pixel
+                        img[y, x, :] = (
+                            np.random.randint(0, 256),
+                            np.random.randint(0, 256),
+                            np.random.randint(0, 256)
+                        )
+                    else:
+                        img[y, x, :] = self.color
                     num_removed += 1
 
         total_pixels = h * w
