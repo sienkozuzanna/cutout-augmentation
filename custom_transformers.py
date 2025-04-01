@@ -47,6 +47,42 @@ class RandomPixelCutout:
         new_label = label* remaining/total_pixels
         return Image.fromarray(img), new_label
     
+class RandomSquaresCutout:
+    def __init__(self,max_number_of_squares,max_size_ratio,color=False):
+        self.max_number_of_squares = max_number_of_squares
+        if max_size_ratio >0.1:
+            raise ValueError('Too big ratio')
+        self.max_size_ratio = max_size_ratio
+        self.color = color
+
+    def __call__(self,img,label):
+        img = np.array(img)
+        h,w,c = img.shape
+        total_pixels = h*w
+        covered_pixels =0
+        square_height = random.randint(1,int(self.max_size_ratio*h))
+        square_width = random.randint(1,int(self.max_size_ratio*w))
+        for i in range(self.max_number_of_squares):
+            #chose left top corner
+            x = np.random.randint(0, w - square_width + 1)
+            y = np.random.randint(0,h - square_height + 1)
+            if self.color:
+                img[y:y+square_height, x:x+square_width] = np.random.randint(0, 256, 
+                                                                             size=(square_height, square_width, c), 
+                                                                             dtype=np.uint8)
+            else:
+                img[y:y+square_height, x:x+square_width] = 0
+            covered_pixels += square_width*square_height
+        remaining = total_pixels - covered_pixels
+        new_label = label * remaining/total_pixels
+        return Image.fromarray(img), new_label
+
+
+
+
+
+
+    
 class SquareCutout:
     
     def __init__(self, size, color=False):
