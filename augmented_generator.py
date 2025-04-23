@@ -42,15 +42,16 @@ class AugmentedCIFAR10Generator(Sequence):
             label_one_hot = np.zeros(self.num_classes, dtype=np.float32)
             label_one_hot[label] = 1.0
             
+            batch_x.append(img) #adding original images
+            batch_y.append(label_one_hot)
 
-            if self.augmentor and i in self.augmented_indices: #apply cutout
+            if self.augmentor and i in self.augmented_indices: #apply cutout and add to batch
                 img_pil = Image.fromarray(img)
                 img_aug, label_aug = self.augmentor(img_pil, label_one_hot.copy())
                 batch_x.append(img_aug)
                 batch_y.append(label_aug)
-            else:
-                batch_x.append(img)
-                batch_y.append(label_one_hot)
+            
+                
         batch_x_resized = np.array([
             cv2.resize(np.array(img) if isinstance(img, Image.Image) else img, (224, 224))
             for img in batch_x
