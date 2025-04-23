@@ -12,7 +12,7 @@ class AugmentedCIFAR10Generator(Sequence):
     '''
     Class for data preparation for RestNet model with custom Agumentation class passed as an argument
     '''
-    def __init__(self, x_data, y_data, batch_size = 32, shuffle=True, augmentor = None, augment_fraction=0.2, num_classes =10):
+    def __init__(self, x_data, y_data, batch_size = 32, shuffle=True, augmentor = None, augment_fraction=0.2, num_classes =10, overwrite= False):
         self.x = x_data
         self.y = y_data.flatten()
         self.num_classes = num_classes
@@ -20,12 +20,17 @@ class AugmentedCIFAR10Generator(Sequence):
         self.shuffle = shuffle
         self.augmentor = augmentor
         self.augment_fraction = augment_fraction
+        self.overwrite = overwrite #do we want to overwrite original data with augmented or add new samples 
         
         self.indices = np.arange(len(self.x))
         self.augmented_indices = np.random.choice(self.indices, size = int(len(self.x)* augment_fraction), replace=False) #choosing images to be augmented
 
     def __len__(self):
-        return int(np.ceil(len(self.x)/ self.batch_size))
+        if self.overwrite or not self.augmentor:
+            return int(np.ceil(len(self.x)/ self.batch_size))
+        else:
+            total = len(self.x) + int(len(self.x) * self.augment_fraction)
+            return int(np.ceil(total/self.batch_size))
     
     def on_epoch_end(self):
         if self.shuffle:
@@ -41,15 +46,26 @@ class AugmentedCIFAR10Generator(Sequence):
             label = self.y[i]
             label_one_hot = np.zeros(self.num_classes, dtype=np.float32)
             label_one_hot[label] = 1.0
-            
-            batch_x.append(img) #adding original images
-            batch_y.append(label_one_hot)
 
-            if self.augmentor and i in self.augmented_indices: #apply cutout and add to batch
-                img_pil = Image.fromarray(img)
-                img_aug, label_aug = self.augmentor(img_pil, label_one_hot.copy())
-                batch_x.append(img_aug)
-                batch_y.append(label_aug)
+            if self.overwrite:
+                if self.augmentor and i in self.augmented_indices: #apply cutout and add to batch
+                    img_pil = Image.fromarray(img)
+                    img_aug, label_aug = self.augmentor(img_pil, label_one_hot.copy())
+                    batch_x.append(img_aug)
+                    batch_y.append(label_aug)
+                else:
+                    batch_x.append(img) #adding original images only if they werent in augmeted indicies
+                    batch_y.append(label_one_hot)
+
+            else: 
+                batch_x.append(img) #adding original images of the whole batch
+                batch_y.append(label_one_hot)
+
+                if self.augmentor and i in self.augmented_indices: #additionally adding augmented samples
+                    img_pil = Image.fromarray(img)
+                    img_aug, label_aug = self.augmentor(img_pil, label_one_hot.copy())
+                    batch_x.append(img_aug)
+                    batch_y.append(label_aug)
             
                 
         batch_x_resized = np.array([
