@@ -26,11 +26,9 @@ class AugmentedCIFAR10Generator(Sequence):
         self.augmented_indices = np.random.choice(self.indices, size = int(len(self.x)* augment_fraction), replace=False) #choosing images to be augmented
 
     def __len__(self):
-        if self.overwrite or not self.augmentor:
-            return int(np.ceil(len(self.x)/ self.batch_size))
-        else:
-            total = len(self.x) + int(len(self.x) * self.augment_fraction)
-            return int(np.ceil(total/self.batch_size))
+        
+        return int(np.ceil(len(self.x)/ self.batch_size))
+        
     
     def on_epoch_end(self):
         if self.shuffle:
