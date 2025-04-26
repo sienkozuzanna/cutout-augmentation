@@ -10,11 +10,12 @@ class AugmentedCIFAR10Generator(Sequence):
     Works in two modes:
     1. With augmentor: applies augmentation upfront (more efficient for training)
     2. Without augmentor: works in batch-by-batch mode (better for validation/test)
+    Preserves augmented labels exactly as returned by the augmentor
     '''
     def __init__(self, x_data, y_data, batch_size=32, shuffle=True, augmentor=None, 
                  augment_fraction=0.2, num_classes=10, overwrite=False):
         self.x = x_data
-        self.y = y_data.flatten()
+        self.y = y_data
         self.num_classes = num_classes
         self.batch_size = batch_size
         self.shuffle = shuffle
@@ -22,7 +23,9 @@ class AugmentedCIFAR10Generator(Sequence):
         self.augment_fraction = augment_fraction
         self.overwrite = overwrite
         
-        # If we have an augmentor, apply augmentation upfront (training mode)
+        if len(self.y.shape) == 1 or self.y.shape[1] != self.num_classes:
+            self.y = np.eye(self.num_classes)[self.y.flatten()]
+        
         if self.augmentor is not None:
             self.x_augmented, self.y_augmented = self._apply_augmentation()
             
@@ -35,7 +38,6 @@ class AugmentedCIFAR10Generator(Sequence):
                 self.x_combined[self.augmented_indices] = self.x_augmented
                 self.y_combined[self.augmented_indices] = self.y_augmented
         else:
-            # No augmentor (test/validation mode)
             self.x_combined = self.x
             self.y_combined = self.y
         
@@ -55,14 +57,12 @@ class AugmentedCIFAR10Generator(Sequence):
         for i in self.augmented_indices:
             img = self.x[i]
             label = self.y[i]
-            label_one_hot = np.zeros(self.num_classes, dtype=np.float32)
-            label_one_hot[label] = 1.0
             
             img_pil = Image.fromarray(img)
-            img_aug, label_aug = self.augmentor(img_pil, label_one_hot.copy())
+            img_aug, label_aug = self.augmentor(img_pil, label.copy())
             
             x_augmented.append(np.array(img_aug))
-            y_augmented.append(np.argmax(label_aug))
+            y_augmented.append(label_aug)
             
         return np.array(x_augmented), np.array(y_augmented)
 
@@ -83,11 +83,8 @@ class AugmentedCIFAR10Generator(Sequence):
             img = self.x_combined[i]
             label = self.y_combined[i]
             
-            label_one_hot = np.zeros(self.num_classes, dtype=np.float32)
-            label_one_hot[label] = 1.0
-            
             batch_x.append(img)
-            batch_y.append(label_one_hot)
+            batch_y.append(label)
             
         batch_x_resized = np.array([cv2.resize(np.array(img) if isinstance(img, Image.Image) 
                                                else img, (224, 224)) for img in batch_x])
