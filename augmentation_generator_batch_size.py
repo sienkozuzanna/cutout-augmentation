@@ -3,6 +3,7 @@ import numpy as np
 from PIL import Image
 from tensorflow.keras.applications.resnet50 import preprocess_input
 from tensorflow.keras.utils import Sequence
+from tensorflow.keras.utils import to_categorical
 
 class AugmentedCIFAR10Generator(Sequence):
     '''
@@ -13,7 +14,7 @@ class AugmentedCIFAR10Generator(Sequence):
     Preserves augmented labels exactly as returned by the augmentor
     '''
     def __init__(self, x_data, y_data, batch_size=32, shuffle=True, augmentor=None, 
-                 augment_fraction=0.2, num_classes=10, overwrite=False):
+                 augment_fraction=0.2, num_classes=10, overwrite=False, soft_label = True):
         self.x = x_data
         self.y = y_data
         self.num_classes = num_classes
@@ -22,9 +23,11 @@ class AugmentedCIFAR10Generator(Sequence):
         self.augmentor = augmentor
         self.augment_fraction = augment_fraction
         self.overwrite = overwrite
+        self.soft_label = soft_label
         
         if len(self.y.shape) == 1 or self.y.shape[1] != self.num_classes:
-            self.y = np.eye(self.num_classes)[self.y.flatten()]
+            #self.y = np.eye(self.num_classes)[self.y.flatten()]
+            self.y = to_categorical(self.y, num_classes=self.num_classes)
         
         if self.augmentor is not None:
             self.x_augmented, self.y_augmented = self._apply_augmentation()
@@ -62,7 +65,10 @@ class AugmentedCIFAR10Generator(Sequence):
             img_aug, label_aug = self.augmentor(img_pil, label.copy())
             
             x_augmented.append(np.array(img_aug))
-            y_augmented.append(label_aug)
+            if self.soft_label:
+                y_augmented.append(label_aug)
+            else:
+                y_augmented.append(label) #if we dont want to change labels
             
         return np.array(x_augmented), np.array(y_augmented)
 
@@ -86,9 +92,10 @@ class AugmentedCIFAR10Generator(Sequence):
             batch_x.append(img)
             batch_y.append(label)
             
-        batch_x_resized = np.array([cv2.resize(np.array(img) if isinstance(img, Image.Image) 
-                                               else img, (224, 224)) for img in batch_x])
-        batch_x_preprocessed = preprocess_input(batch_x_resized.astype(np.float32))
-        batch_y = np.array(batch_y, dtype=np.float32)
+        # batch_x_resized = np.array([cv2.resize(np.array(img) if isinstance(img, Image.Image) 
+        #                                        else img, (224, 224)) for img in batch_x])
+        batch_x_normalized = np.array(batch_x, dtype = np.float32)/255.0
+        #batch_x_preprocessed = preprocess_input(batch_x_resized.astype(np.float32))
+        batch_y = np.array(batch_y, dtype=np.float32) 
 
-        return batch_x_preprocessed, batch_y
+        return batch_x_normalized, batch_y
