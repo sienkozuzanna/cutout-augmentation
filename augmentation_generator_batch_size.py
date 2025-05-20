@@ -63,6 +63,9 @@ class AugmentedCIFAR10Generator(Sequence):
             
             img_pil = Image.fromarray(img)
             img_aug, label_aug = self.augmentor(img_pil, label.copy())
+
+            # convert the soft label to that it not dependent on the area
+            label_aug = [0 if k==0 else 0.9999 for k in label_aug]
             
             x_augmented.append(np.array(img_aug))
             if self.soft_label:
