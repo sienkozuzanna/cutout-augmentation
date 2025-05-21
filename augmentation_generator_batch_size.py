@@ -14,7 +14,7 @@ class AugmentedCIFAR10Generator(Sequence):
     Preserves augmented labels exactly as returned by the augmentor
     '''
     def __init__(self, x_data, y_data, batch_size=32, shuffle=True, augmentor=None, 
-                 augment_fraction=0.2, num_classes=10, overwrite=False, soft_label = True):
+                 augment_fraction=0.2, num_classes=10, overwrite=False, soft_label = True, soft_label_fraction = 0):
         self.x = x_data
         self.y = y_data
         self.num_classes = num_classes
@@ -24,6 +24,7 @@ class AugmentedCIFAR10Generator(Sequence):
         self.augment_fraction = augment_fraction
         self.overwrite = overwrite
         self.soft_label = soft_label
+        self.soft_label_fraction = soft_label_fraction
         
         if len(self.y.shape) == 1 or self.y.shape[1] != self.num_classes:
             #self.y = np.eye(self.num_classes)[self.y.flatten()]
@@ -65,7 +66,10 @@ class AugmentedCIFAR10Generator(Sequence):
             img_aug, label_aug = self.augmentor(img_pil, label.copy())
 
             # convert the soft label so that it's not dependent on the area
-            label_aug = [0 if k==0 else 0.9999 for k in label_aug]
+            # (only if soft_label_fraction specified)
+
+            if self.soft_label_fraction:
+                label_aug = [0 if k==0 else self.soft_label_fraction for k in label_aug]
             
             x_augmented.append(np.array(img_aug))
             if self.soft_label:
