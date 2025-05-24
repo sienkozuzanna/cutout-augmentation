@@ -44,7 +44,7 @@ class RandomPixelCutout:
 
         #calculate new label based on remaining fraction
         remaining = total_pixels - num_to_remove
-        new_label = label* remaining/total_pixels
+        new_label = np.round(label* remaining/total_pixels,2)
         return Image.fromarray(img), new_label
     
 class RandomSquaresCutout:
@@ -74,11 +74,8 @@ class RandomSquaresCutout:
                 img[y:y+square_height, x:x+square_width] = 0
             covered_pixels += square_width*square_height
         remaining = total_pixels - covered_pixels
-        new_label = label * remaining/total_pixels
+        new_label = np.round(label * remaining/total_pixels,2)
         return Image.fromarray(img), new_label
-
-
-
 
 
 
@@ -127,7 +124,7 @@ class SquareCutout:
         total_pixels = h*w
         num_to_remove = self.size**2
         remaining = total_pixels - num_to_remove
-        new_label = label* remaining/total_pixels
+        new_label = np.round(label* remaining/total_pixels)
         return Image.fromarray(img), new_label
     
 class CircleCutout:
