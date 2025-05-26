@@ -1,6 +1,6 @@
-tensorflow
-torch
-torchvision
-numpy
-matplotlib
-pillow
+matplotlib==3.10.3
+numpy==2.2.6
+opencv_python==4.11.0.86
+Pillow==11.2.1
+tensorflow==2.19.0
+torch==2.6.0
