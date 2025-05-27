@@ -6,6 +6,46 @@ Celem projektu było przeprowadzenie eksperymentów mających na celu zweryfikow
 
  ## Opis metod cutout
  ...
+ ## Opis wykorzystanych danych
+ W ramach projektu wykorzystano dwa zestawy danych obrazowaych: **CIFAR-10** oraz **Fashion-MNIST**. Oba zbiory należą do najczęściej stosowanych benchmarków w zadaniach klasyfikacji obrazów. 
+ #### CIFAR-10
+ Zbiór danych **CIFAR-10** zawiera **60 000 kolorowych obrazów RGB** o wymiarach **32×32 piksele**, podzielonych na **10 klas**:
+
+- samolot  
+- samochód  
+- ptak  
+- kot  
+- jeleń  
+- pies  
+- żaba  
+- koń  
+- statek  
+- ciężarówka
+
+Podział zbioru:
+- **50 000 obrazów treningowych**
+- **10 000 obrazów testowych**
+
+#### Fashion-MNIST
+
+Zbiór danych **Fashion-MNIST** to nowoczesna alternatywa dla klasycznego MNIST. Zawiera **obrazy przedstawiające elementy odzieży** w odcieniach szarości o wymiarach **28×28 pikseli**, które są podzielone na **10 klas ubrań i akcesoriów**:
+- T-shirt/top  
+- Spodnie  
+- Sweter  
+- Sukienka  
+- Płaszcz  
+- Sandały  
+- Koszula  
+- Sneakersy  
+- Torba  
+- Botki
+  
+Podział zbioru:
+- **60 000 obrazów treningowych**
+- **10 000 obrazów testowych**
+
+
+ 
  ## Opis modeli
  ...
  ## Analiza wyników
