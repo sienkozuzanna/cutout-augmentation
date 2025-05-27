@@ -60,28 +60,25 @@ class RandomSquaresCutout:
         h,w,c = img.shape
         total_pixels = h*w
         covered_pixels =0
-        square_height = random.randint(1,int(self.max_size_ratio*h))
-        square_width = random.randint(1,int(self.max_size_ratio*w))
+        max_square_size = int(min(h, w) * self.max_size_ratio)
+
         for i in range(self.max_number_of_squares):
             #chose left top corner
-            x = np.random.randint(0, w - square_width + 1)
-            y = np.random.randint(0,h - square_height + 1)
+            square_size = random.randint(1, max_square_size)
+            x = np.random.randint(0, w - square_size + 1)
+            y = np.random.randint(0, h - square_size + 1)
             if self.color:
-                img[y:y+square_height, x:x+square_width] = np.random.randint(0, 256, 
-                                                                             size=(square_height, square_width, c), 
-                                                                             dtype=np.uint8)
+                img[y:y+square_size, x:x+square_size] = np.random.randint(0, 256,
+                    size=(square_size, square_size, c), dtype=np.uint8)
             else:
-                img[y:y+square_height, x:x+square_width] = 0
-            covered_pixels += square_width*square_height
+                img[y:y+square_size, x:x+square_size] = 0
+            covered_pixels += square_size ** 2
         remaining = total_pixels - covered_pixels
         new_label = np.round(label * remaining/total_pixels,2)
         return Image.fromarray(img), new_label
 
-
-
     
 class SquareCutout:
-    
     def __init__(self, size, color=False):
         '''
         Class performing square cutout and returning new Image object after transformation and new soft label.
@@ -91,7 +88,6 @@ class SquareCutout:
         self.size = size
         self.color = color
     
-        
     def __call__(self, img, label):
         '''
         Method for performing transformations.
@@ -124,7 +120,7 @@ class SquareCutout:
         total_pixels = h*w
         num_to_remove = self.size**2
         remaining = total_pixels - num_to_remove
-        new_label = np.round(label* remaining/total_pixels)
+        new_label = label* remaining/total_pixels
         return Image.fromarray(img), new_label
     
 class CircleCutout:

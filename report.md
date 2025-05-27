@@ -5,7 +5,180 @@ Celem projektu było przeprowadzenie eksperymentów mających na celu zweryfikow
  Wyżej wspomniane metody połączono także z mechanizmem soft labeling zmieniającym etykiety klas proporcjonalnie do zakrytego pola. Inuticyjnie takie działanie powinno poprawić wyniki modelu na zbiorze walidacyjnym, ponieważ zostałby on lepiej nauczony rozpoznawania obrazów obraczonych szumem, zatem była to druga hipoteza, która została poddana ekspermentom w tym projekcie.
 
  ## Opis metod cutout
- ...
+
+Zaimplementowano 5 rodzajów cutoutu - RandomPixelsCutout, RandomSquaresCutout, SquareCutout, CircleCutout, PolygonCutout oraz zmianę wejściowych etykiet na Soft Labels skalowane proporcjonalnie do powierzchni niezamaskowanego obszaru obrazu. Wszystkie metody cutoutu umożliwiają konfigurację rozmiaru i koloru wycięcia.
+
+### Opis klas implementujących cutout
+
+#### RandomPixelsCutout
+
+Klasa `RandomPixelsCutout` implementuje metodę losowego zakrywania pikseli obrazu. Transformacja ta polega na losowym wyborze pikseli w obrazie i nadpisaniu ich wartością czarną lub losowym kolorem – w zależności od ustawienia parametru color.
+
+Parametry klasy:
+- **`max_cutout_size`** (*float*): Maksymalny procent pikseli, które mogą zostać zakryte (wartość z zakresu 0–1).
+- **`color`** (*bool*): Jeśli `False`, zakryte piksele przyjmują kolor czarny (0,0,0). Jeśli `True`, każdy zakryty piksel otrzymuje losowy kolor RGB.
+  
+Metoda `__call__`:
+1. Obliczana jest losowa liczba pikseli do zakrycia – maksymalnie `max_cutout_size * liczba_pikseli`.
+2. Wybierane są losowe współrzędne (x, y) dla tych pikseli.
+3. W zależności od ustawienia `color`, piksele są nadpisywane kolorem czarnym lub losowymi wartościami RGB.
+4. Obliczana jest nowa wartość etykiety (*soft label*).
+
+Transformacja zwraca nowy obraz oraz zaktualizowaną etykietę.
+
+<div style="display: flex; justify-content: space-between; align-items: flex-start;">
+  <figure style="margin: 0; width: 45%; text-align: center;">
+    <img src="report_images/random_pixels_cutout_black.png" style="width: 100%;" />
+    <figcaption>RandomPixelsCutout, max_cutout_size = 0.3, color = False</figcaption>
+  </figure>
+  <figure style="margin: 0; width: 45%; text-align: center;">
+    <img src="report_images/random_pixels_cutout_color.png" style="width: 100%;" />
+    <figcaption>RandomPixelsCutout, max_cutout_size = 0.3, color = True</figcaption>
+  </figure>
+</div>
+
+
+#### RandomSquaresCutout
+
+Klasa `RandomSquaresCutout` implementuje wariant metody cutoutu polegający na losowym zakrywaniu obrazu kwadratowymi obszarami o jednakowym rozmiarze.
+
+Parametry klasy:
+- **`max_number_of_squares`** (*int*): Maksymalna liczba kwadratów, które mogą zostać nałożone na obraz.
+- **`max_size_ratio`** (*float*): Maksymalny stosunek długości boku kwadratu do wymiaru obrazu (wartość z zakresu 0–0.1). Wyższe wartości są niedozwolone i spowodują zgłoszenie wyjątku.
+- **`color`** (*bool*): Określa sposób zakrycia. Jeśli `False`, piksele w obrębie wycinka zostaną zamienione na czarne (0,0,0). Jeśli `True`, każdy piksel wewnątrz kwadratu otrzyma losowy kolor RGB.
+
+Metoda `__call__`:
+1. Losowany jest rozmiar kwadratu na podstawie proporcji `max_size_ratio`.
+2. Dla każdego z `max_number_of_squares` generowane są losowe współrzędne lewego górnego rogu, w taki sposób, by kwadrat mieścił się w granicach obrazu.
+3. Kwadratowe obszary są nakładane na obraz i wypełniane odpowiednim kolorem.
+4. Obliczana jest nowa wartość etykiety (*soft label*).
+
+Transformacja zwraca zmodyfikowany obraz oraz nową etykietę.
+
+<div style="display: flex; justify-content: space-between; align-items: flex-start;">
+  <figure style="margin: 0; width: 45%; text-align: center;">
+    <img src="report_images/random_squares_cutout_black.png" style="width: 100%;" />
+    <figcaption>RandomSquaresCutout, max_number_of_squares = 10, max_size_ratio = 0.1, color = False</figcaption>
+  </figure>
+  <figure style="margin: 0; width: 45%; text-align: center;">
+    <img src="report_images/random_squares_cutout_color.png" style="width: 100%;" />
+    <figcaption>RandomSquaresCutout, max_number_of_squares = 50, max_size_ratio = 0.1, color = True</figcaption>
+  </figure>
+</div>
+
+#### SquareCutout
+
+Klasa `SquareCutout` implementuje metodę zakrywania jednego, kwadratowego obszaru obrazu o ustalonym rozmiarze. W odróżnieniu od wersji losowej (`RandomSquaresCutout`), ta metoda zawsze aplikuje dokładnie jedno wycięcie, którego rozmiar określany jest bezpośrednio przez użytkownika.
+
+Parametry klasy:
+- **`size`** (*int*): Rozmiar wycinanego kwadratu w pikselach (bok kwadratu). Wartość ta musi być mniejsza niż najmniejszy z wymiarów obrazu.
+- **`color`** (*bool*): Określa sposób zakrycia. Jeśli `False`, piksele w obrębie wycinka zostaną zamienione na czarne (0,0,0). Jeśli `True`, każdy piksel wewnątrz kwadratu otrzyma losowy kolor RGB.
+
+Metoda `__call__`:
+1. Sprawdzana jest poprawność rozmiaru wycinka względem wymiarów obrazu – w przypadku błędu zgłaszany jest wyjątek.
+2. Losowo wybierane są współrzędne lewego górnego rogu kwadratu.
+3. Kwadratowy obszar o zadanym rozmiarze jest nadpisywany kolorem czarnym lub losowymi wartościami RGB.
+4. Na podstawie liczby zmodyfikowanych pikseli (czyli `size²`) obliczana jest nowa etykieta (*soft label*).
+
+Transformacja zwraca zmodyfikowany obraz oraz zaktualizowaną etykietę.
+
+<div style="display: flex; justify-content: space-between; align-items: flex-start;">
+  <figure style="margin: 0; width: 45%; text-align: center;">
+    <img src="report_images/square_cutout_black.png" style="width: 100%;" />
+    <figcaption>RandomSquareCutout, size = 80, color = False</figcaption>
+  </figure>
+  <figure style="margin: 0; width: 45%; text-align: center;">
+    <img src="report_images/square_cutout_color.png" style="width: 100%;" />
+    <figcaption>RandomSquareCutout, size = 50, color = True</figcaption>
+  </figure>
+</div>
+
+#### CircleCutout
+
+Klasa `CircleCutout` implementuje metodę zakrywania obrazu za pomocą pojedynczego kołowego wycięcia o zmiennym promieniu.
+
+Parametry klasy:
+- **`radius`** (*int* lub *None*): Promień kołowego wycięcia w pikselach. Jeśli `None`, promień jest wybierany losowo z zakresu od 5 do wartości wyliczonej na podstawie rozmiarów obrazu i `max_size_ratio`.
+- **`max_size_ratio`** (*float*): Maksymalny rozmiar wycięcia wyrażony jako ułamek mniejszego wymiaru obrazu (wartość z zakresu 0–1). Promień koła nie może przekroczyć połowy tej wartości.
+- **`color`** (*tuple* RGB lub *None*): Kolor wycięcia. Domyślnie czarny `(0,0,0)`, jeśli nie zostanie podany.
+- **`random_color`** (*bool*): Jeśli `True`, piksele wewnątrz koła otrzymują losowe kolory RGB zamiast jednolitego koloru.
+
+Metoda `__call__`:
+1. Ustala promień wycięcia na podstawie parametru `radius` lub losowo w dopuszczalnym zakresie.
+2. Losowo wybiera środek koła tak, aby mieściło się ono w obrębie obrazu.
+3. Tworzy maskę pikseli należących do koła według równania okręgu.
+4. Nakłada maskę na obraz, zamieniając piksele na czarne lub losowe kolory RGB.
+5. Oblicza nową etykietę (*soft label*).
+
+Transformacja zwraca zmodyfikowany obraz oraz zaktualizowaną etykietę.
+
+<div style="display: flex; justify-content: space-between; align-items: flex-start;">
+  <figure style="margin: 0; width: 45%; text-align: center;">
+    <img src="report_images/circle_cutout_black.png" style="width: 100%;" />
+    <figcaption>CircleCutout, max_size_ratio = 0.3, color = False</figcaption>
+  </figure>
+  <figure style="margin: 0; width: 45%; text-align: center;">
+    <img src="report_images/circle_cutout_color.png" style="width: 100%;" />
+    <figcaption>CircleCutout, max_size_ratio = 0.3, color = True</figcaption>
+  </figure>
+</div>
+
+
+
+#### PolygonCutout
+
+Klasa `PolygonCutout` implementuje metodę zakrywania obrazu za pomocą wycięcia w kształcie wielokąta o losowej liczbie wierzchołków.
+
+Parametry klasy:
+- **`max_vertices`** (*int*): Maksymalna liczba wierzchołków wielokąta (domyślnie 12).
+- **`min_vertices`** (*int*): Minimalna liczba wierzchołków wielokąta (domyślnie 3, czyli trójkąt).
+- **`max_size_ratio`** (*float*): Maksymalny rozmiar wycięcia wyrażony jako ułamek mniejszego wymiaru obrazu (wartość z zakresu 0–1).
+- **`color`** (*tuple* RGB lub *None*): Kolor wycięcia. Domyślnie czarny `(0,0,0)`, jeśli nie zostanie podany.
+- **`random_color`** (*bool*): Jeśli `True`, piksele wewnątrz wielokąta otrzymują losowe kolory RGB zamiast jednolitego koloru.
+
+Metoda `__call__`:
+1. Losuje liczbę wierzchołków wielokąta z zakresu od `min_vertices` do `max_vertices`.
+2. Losowo wyznacza środek wielokąta oraz promień bazowy na podstawie `max_size_ratio`.
+3. Generuje punkty wierzchołków wielokąta, rozmieszczone wokół środka z losowym przesunięciem kąta i odległości.
+4. Sprawdza dla każdego piksela, czy znajduje się wewnątrz wielokąta, wykorzystując algorytm ray-casting.
+5. Piksele znajdujące się wewnątrz wielokąta są zamieniane na wybrany kolor lub losowe kolory RGB.
+6. Oblicza nową etykietę (*soft label*).
+
+Transformacja zwraca zmodyfikowany obraz oraz zaktualizowaną etykietę.
+
+<div style="display: flex; justify-content: space-between; align-items: flex-start;">
+  <figure style="margin: 0; width: 45%; text-align: center;">
+    <img src="report_images/polygon_cutout_black.png" style="width: 100%;" />
+    <figcaption>PolygonCutout, max_size_ratio = 0.3, max_vertices = 12, min_vertices = 8, color = False</figcaption>
+  </figure>
+  <figure style="margin: 0; width: 45%; text-align: center;">
+    <img src="report_images/polygon_cutout_color.png" style="width: 100%;" />
+    <figcaption>PolygonCutout, max_size_ratio = 0.3, max_vertices = 12, min_vertices = 8, color = True</figcaption>
+  </figure>
+</div>
+
+
+#### SoftLabelsDataset
+
+Klasa `SoftLabelDataset` rozszerza istniejący zbiór danych o dodatkową możliwość transformacji obrazów za pomocą cutoutu oraz modyfikacji etykiet na *soft labels*.
+
+Parametry klasy:
+- **`dataset`**: oryginalny zbiór danych, który ma być przetwarzany.
+- **`pipeline_before_cutout`**: sekwencja transformacji wykonywanych na obrazach przed zastosowaniem cutoutu.
+- **`pipeline_after_cutout`**: sekwencja transformacji wykonywanych po cutoucie.
+- **`num_classes`** (*int*): liczba klas w zbiorze danych, używana do kodowania one-hot etykiet.
+- **`cutout_transform`**: obiekt transformacji wykonujący cutout. Jeśli `None`, to cutout nie jest wykonywany, a zbiór danych nie jest rozszerzany.
+
+Metody:
+- `__len__`: zwraca rozmiar zbioru danych. Jeśli dostępny jest transformator cutoutu, zwraca podwójną długość oryginalnego zbioru (oryginalne + przekształcone obrazy).
+- `__getitem__`: dla danego indeksu zwraca parę `(obraz, etykieta)`. 
+  - Dla indeksów odpowiadających transformacjom cutoutu, obraz jest przetwarzany przez `cutout_transform`, a etykieta jest modyfikowana na *soft label*.
+  - W przeciwnym wypadku zwraca oryginalny obraz i etykietę (zakodowaną one-hot).
+  - Transformacje zdefiniowane w `pipeline_before_cutout` są wykonywane zawsze przed cutoutem, a `pipeline_after_cutout` zawsze po nim (lub zamiast, jeśli cutout nie jest stosowany).
+
+Transformacja zwraca przetworzony obraz oraz odpowiednio zmodyfikowaną etykietę.
+
+
  ## Opis wykorzystanych danych
  W ramach projektu wykorzystano dwa zestawy danych obrazowaych: **CIFAR-10** oraz **Fashion-MNIST**. Oba zbiory należą do najczęściej stosowanych benchmarków w zadaniach klasyfikacji obrazów. 
  #### CIFAR-10
