@@ -264,20 +264,89 @@ W eksperymencie jako model bazowy wykorzystano konwolucyjną sieć neuronową (C
 Model bazowy osiągnął następujące wyniki po 6 epokach treningu:
 
 - **Accuracy (zbiór treningowy):** 0.8461  
-- **Accuracy (zbiór testowy):** 0.8033  
+- **Accuracy (zbiór walidacyjny):** 0.8033  
 
 #### Wyniki modelu bazowego dla zbioru Fashion-MNIST
 
 Model bazowy osiągnął następujące wyniki po 6 epokach treningu:
 
 - **Accuracy (zbiór treningowy):** 0.9446  
-- **Accuracy (zbiór testowy):** 0.9276  
+- **Accuracy (zbiór walidacyjny):** 0.9276  
 
 Wyniki te stanowiły za punkt odniesienia dla oceny wpływu technik **Cutout** oraz **soft labels** na jakość klasyfikacji. W kolejnych sekcjach przedstawiono, w jaki sposób te metody wpływają na skuteczność modelu w kontekście obu zbiorów danych.
 
 
  ## Analiza wyników
- ...
+Wyniki eksperymentów z podziałem na zbiory danych zostały przedstawione w formie tabelarycznej poniżej.
+
+#### Zbiór danych: CIFAR
+
+| Cutout Type | Max Size / Param   | Soft / Normal | Val Acc | Train Acc |
+|-------------|--------------------|----------------|---------|-----------|
+| Polygon     | 0.2                | Normal         | 0.8033  | 0.8461    |
+| Polygon     | 0.1                | Normal         | 0.8023  | 0.8661    |
+| Polygon     | 0.05               | Normal         | 0.7989  | 0.8687    |
+| Polygon     | 0.05               | Soft           | 0.7833  | 0.8705    |
+| Pixels      | 0.1                | Normal         | 0.7709  | 0.8715    |
+| Pixels      | 0.05               | Normal         | 0.8010  | 0.8619    |
+| Pixels      | 0.05               | Soft           | 0.8123  | 0.8656    |
+| Pixels      | 0.05               | Soft           | 0.4791  | 0.5017    |
+| Squares     | 25, ratio = 0.1    | Normal         | 0.7601  | 0.8584    |
+| Squares     | 10, ratio = 0.1    | Normal         | 0.8055  | 0.8627    |
+| Squares     | 10, ratio = 0.05   | Normal         | 0.8135  | 0.8637    |
+| Squares     | 10, ratio = 0.05   | Soft           | 0.7912  | 0.8646    |
+| Square      | 5                  | Normal         | 0.8119  | 0.8747    |
+| Square      | 10                 | Normal         | 0.8010  | 0.8633    |
+| Square      | 5                  | Soft           | 0.7460  | 0.8117    |
+
+---
+Dla powyższego zbioru **obniżenie** accuracy na zbiorze treningowym w porównaniu do modelu bazowego zostało zanotowane tylko w przypadku:
+<li>Pixels(0.05, soft)</li>
+<li>Square(5, soft)</li>
+<br>
+
+Jeśli chodzi o zbiór walidacyjny, **obniżenie** accuracy zaobserwowane został dla:
+<br>
+<li>Pixels(0.05, soft)</li>
+<li>Squares(25, 0.1, normal)</li>
+<li>Squares(10, 0.05, soft)</li>
+<li>Square(5, normal)</li>
+<br>
+Eksperyment, który wypadł zdecydowanie najgorzej to cutout Pixels(0.05, soft) z accuracy treningowym na poziomie zaledwie 0.5017, a walidacyjnym 0.4791. Jest to bardzo niski i niepokojący wynik, który w porównaniu z innymi eksperymentami z soft labels, wypada drastycznie gorzej.
+
+
+#### Zbiór danych: Fashion MNIST
+
+| Cutout Type | Max Size / Param   | Soft / Normal | Val Acc | Train Acc |
+|-------------|--------------------|----------------|---------|-----------|
+| Polygon     | 0.2                | Normal         | 0.9276  | 0.9446    |
+| Polygon     | 0.1                | Normal         | 0.9238  | 0.9464    |
+| Polygon     | 0.05               | Normal         | 0.9274  | 0.9461    |
+| Polygon     | 0.05               | Soft           | 0.9064  | 0.9472    |
+| Pixels      | 0.1                | Normal         | 0.9193  | 0.9473    |
+| Pixels      | 0.05               | Normal         | 0.9244  | 0.9471    |
+| Pixels      | 0.05               | Soft           | 0.9265  | 0.9481    |
+| Pixels      | 0.05               | Soft           | 0.7149  | 0.6800    |
+| Squares     | 25, ratio = 0.1    | Normal         | 0.9200  | 0.9451    |
+| Squares     | 10, ratio = 0.1    | Normal         | 0.9269  | 0.9476    |
+| Squares     | 10, ratio = 0.05   | Normal         | 0.7253  | 0.8099    |
+| Squares     | 10, ratio = 0.05   | Soft           | 0.7701  | 0.7879    |
+| Square      | 5                  | Normal         | 0.9262  | 0.9471    |
+| Square      | 10                 | Normal         | 0.9211  | 0.9475    |
+| Square      | 5                  | Soft           | 0.8063  | 0.7243    |
+
+ Dla zbioru Fashion MNIST **obniżenie** accuracy na zbiorze treningowym w porównaniu do modelu bazowego zostało zanotowane w przypadku:
+<li>Pixels(0.05, soft)</li>
+<li>Squares(10, 0.05,  normal)</li>
+<li>Squares(10, 0.05,  soft)</li>
+<li>Square(5, soft)</li>
+<br>
+
+Jeśli chodzi o zbiór walidacyjny, obniżenie accuracy zaobserwowane zostało **dla każdej z technik.**
+<br>
+
+**W obydwu ekperymentach cutout Pixels(0.05, soft) spowodowało obniżenie accuracy zarówno na zbiorze treningowym jak i walidacyjnym.**
+
  ## Dodatkowe eksperymenty i testy
  ... (te 999 i wgl opis problemów że to nie tak jak miało być )
  ## Podsumowanie
