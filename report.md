@@ -220,7 +220,62 @@ Podział zbioru:
 
  
  ## Opis modeli
- ...
+ ### Model bazowy
+
+W eksperymencie jako model bazowy wykorzystano konwolucyjną sieć neuronową (CNN), zaprojektowaną do klasyfikacji obrazów wejściowych o takim samym kształcie jak próbki w zbiorze `X_train`. Liczba neuronów w warstwie wyjściowej (`k`) odpowiada liczbie klas i została ustalona na podstawie kształtu etykiet treningowych (`k = Y_train.shape[1]`). Architektura modelu została zbudowana w oparciu o klasyczne podejście z warstwami konwolucyjnymi, normalizacją i warstwami gęstymi.
+
+#### Szczegóły architektury:
+
+1. **Wejście:**
+   - Obraz wejściowy o kształcie zgodnym z próbkami w `X_train`.
+
+2. **Pierwszy blok konwolucyjny:**
+   - `Conv2D(32, (3, 3), activation='relu', padding='same')`
+   - `BatchNormalization()`
+   - `Conv2D(32, (3, 3), activation='relu', padding='same')`
+   - `BatchNormalization()`
+   - `MaxPooling2D((2, 2))`
+
+3. **Drugi blok konwolucyjny:**
+   - `Conv2D(64, (3, 3), activation='relu', padding='same')`
+   - `BatchNormalization()`
+   - `Conv2D(64, (3, 3), activation='relu', padding='same')`
+   - `BatchNormalization()`
+   - `MaxPooling2D((2, 2))`
+
+4. **Trzeci blok konwolucyjny:**
+   - `Conv2D(128, (3, 3), activation='relu', padding='same')`
+   - `BatchNormalization()`
+   - `Conv2D(128, (3, 3), activation='relu', padding='same')`
+   - `BatchNormalization()`
+   - `MaxPooling2D((2, 2))`
+
+5. **Warstwy gęste:**
+   - `Flatten()`
+   - `Dropout(0.25)`
+   - `Dense(1024, activation='relu')`
+   - `Dropout(0.25)`
+
+6. **Warstwa wyjściowa:**
+   - `Dense(k, activation='softmax')`
+     
+#### Wyniki modelu bazowego dla zbioru CIFAR-10
+
+Model bazowy osiągnął następujące wyniki po 6 epokach treningu:
+
+- **Accuracy (zbiór treningowy):** 0.8461  
+- **Accuracy (zbiór testowy):** 0.8033  
+
+#### Wyniki modelu bazowego dla zbioru Fashion-MNIST
+
+Model bazowy osiągnął następujące wyniki po 6 epokach treningu:
+
+- **Accuracy (zbiór treningowy):** 0.9446  
+- **Accuracy (zbiór testowy):** 0.9276  
+
+Wyniki te stanowiły za punkt odniesienia dla oceny wpływu technik **Cutout** oraz **soft labels** na jakość klasyfikacji. W kolejnych sekcjach przedstawiono, w jaki sposób te metody wpływają na skuteczność modelu w kontekście obu zbiorów danych.
+
+
  ## Analiza wyników
  ...
  ## Dodatkowe eksperymenty i testy
