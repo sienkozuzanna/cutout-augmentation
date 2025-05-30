@@ -348,7 +348,26 @@ Jeśli chodzi o zbiór walidacyjny, obniżenie accuracy zaobserwowane zostało *
 **W obydwu ekperymentach cutout Pixels(0.05, soft) spowodowało obniżenie accuracy zarówno na zbiorze treningowym jak i walidacyjnym.**
 
  ## Dodatkowe eksperymenty i testy
- ... (te 999 i wgl opis problemów że to nie tak jak miało być )
+ Opisane powyżej wyniki jasno wskazują, że zastosowana augmentacja w znacznej większości przypadków nie tylko nie poprawia wyników, lecz je dodatkowo pogarsza. Największym zaskoczeniem jednak był fakt, że wpływ użycia **soft labels** jest tak negatywny:
+
+W zbiorze CIFAR zmienienie etykiet skutkowało w każdorazowym obniżeniu accuracy, przy porównaniu do modelu odpowiadającego mu - stosującego ten sam cutout z identycznymi parametrami. Największy spadek zanotowano dla Pixels(0.05, soft), gdzie wynik jest prawie dwukrotnie niższy. 
+
+Patrząc na zbiór Fashion Mnist wyniki walidacji modelów wspomaganych augmentacją są w każdym przypadku gorsze niż model bazowy. Jeśli chodzi o zachowanie rezultatów po zmianie etykiet to sytuacja jest trochę inna niż w przypadku poprzedniego zbioru. Modele z soft labels w dwóch przypadkach pogarszają, a w dwóch przypadkach polepszają wyniki w porównaniu z ich odpowiadającymi modelami. Jednak obniżenia są zdecydowanie bardziej znaczące - średni wzrost accuracy walidacji w tym przypadku to 2,9%, podczas gdy średni spadek to aż 16,6%. Można więc zatem uznać, że działanie soft labels nie jest pozytywne.
+
+Odpowiedź na pytanie dlaczego tak się dzieje nie jest znana. Etykiety obrazów są zmieniane o małą frakcję, co nie powinno, aż tak pogarszać przewidywań modelów. Jednak możliwe, że nawet takie zmiany nie pozwalają na poprawne działanie tego typu sieci neuronowych. Szukając odpowiedzi na to pytanie, zostały wyróżnione dwa prawdopodobne scenariusze, które mogą tak wpływać na stosowaną konwolucyjną sieć neuronową:
+- Występowanie niedokładności numerycznych przy liczeniu nowej etykiety opartej na wyciętym/zakrytym polu
+- Etykiety jednak są zmniejszane o zbyt dużą liczbę i model z tym sobie nie radzi
+
+### Eksperyment: Soft Labels nie zależą od wyciętego pola.
+
+Aby przepadać prawdziwość tych teorii przeprowadzony został eksperyment mający na celu wytrenowanie modeli korzystając ze stałych labeli, zmniejszanych o znacznie mniejsze wartości. Przebada to obydwie te teorie naraz, nie pozwalając na wyżej wspomniane niedokładności numeryczne, przy jednoczesnym pomniejszaniu etykiet o niezbyt duże liczby.
+
+Każda etykieta obrazu objętego augmentacją, jest zamieniana na normalną etykietę [0 0 … 0 1 0 … 0] gdzie zamiast wartości jeden będzie początkowo wartość 0.9999. Następnie te same eksperymenty zostaną przeprowadzone dla 0.999 oraz 0.99 w celu zobaczenia czy dalsze obniżanie wartości w soft labels przekłada się na obniżone wyniki. 
+
+Wyniki eksperymentów z podziałami na zbiory danych przedstawiono poniżej: 
+
+
+
  ## Podsumowanie
  (Kasia moze napisac na koniec)
 
