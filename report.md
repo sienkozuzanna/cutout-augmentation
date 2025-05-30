@@ -319,13 +319,13 @@ Eksperyment, który wypadł zdecydowanie najgorzej to cutout Pixels(0.05, soft) 
 
 | Cutout Type | Max Size / Param   | Soft / Normal | Val Acc | Train Acc |
 |-------------|--------------------|----------------|---------|-----------|
-| Polygon     | 0.2                | Normal         | 0.9276  | 0.9446    |
-| Polygon     | 0.1                | Normal         | 0.9238  | 0.9464    |
-| Polygon     | 0.05               | Normal         | 0.9274  | 0.9461    |
-| Polygon     | 0.05               | Soft           | 0.9064  | 0.9472    |
-| Pixels      | 0.1                | Normal         | 0.9193  | 0.9473    |
-| Pixels      | 0.05               | Normal         | 0.9244  | 0.9471    |
-| Pixels      | 0.05               | Soft           | 0.9265  | 0.9481    |
+| **base model** | - | - | 0.9276  | 0.9446    |
+| Polygon     | 0.2                | Normal         | 0.9238  | 0.9464    |
+| Polygon     | 0.01               | Normal         | 0.9274  | 0.9461    |
+| Polygon     | 0.05               | Normal         | 0.9064  | 0.9472    |
+| Polygon     | 0.05               | Soft           | 0.9193  | 0.9473    |
+| Pixels      | 0.1                | Normal         | 0.9244  | 0.9471    |
+| Pixels      | 0.05               | Normal         | 0.9265  | 0.9481    |
 | Pixels      | 0.05               | Soft           | 0.7149  | 0.6800    |
 | Squares     | 25, ratio = 0.1    | Normal         | 0.9200  | 0.9451    |
 | Squares     | 10, ratio = 0.1    | Normal         | 0.9269  | 0.9476    |
