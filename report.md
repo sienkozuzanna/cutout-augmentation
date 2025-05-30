@@ -283,13 +283,13 @@ Wyniki eksperymentów z podziałem na zbiory danych zostały przedstawione w for
 
 | Cutout Type | Max Size / Param   | Soft / Normal | Val Acc | Train Acc |
 |-------------|--------------------|----------------|---------|-----------|
-| Polygon     | 0.2                | Normal         | 0.8033  | 0.8461    |
-| Polygon     | 0.1                | Normal         | 0.8023  | 0.8661    |
-| Polygon     | 0.05               | Normal         | 0.7989  | 0.8687    |
-| Polygon     | 0.05               | Soft           | 0.7833  | 0.8705    |
-| Pixels      | 0.1                | Normal         | 0.7709  | 0.8715    |
-| Pixels      | 0.05               | Normal         | 0.8010  | 0.8619    |
-| Pixels      | 0.05               | Soft           | 0.8123  | 0.8656    |
+| **base model** | - | - | 0.8033  | 0.8461    |
+| Polygon     | 0.2                | Normal         | 0.8023  | 0.8661    |
+| Polygon     | 0.1                | Normal         | 0.7989  | 0.8687    |
+| Polygon     | 0.05               | Normal         | 0.7833  | 0.8705    |
+| Polygon     | 0.05               | Soft           | 0.7709  | 0.8715    |
+| Pixels      | 0.1                | Normal         | 0.8010  | 0.8619    |
+| Pixels      | 0.05               | Normal         | 0.8123  | 0.8656    |
 | Pixels      | 0.05               | Soft           | 0.4791  | 0.5017    |
 | Squares     | 25, ratio = 0.1    | Normal         | 0.7601  | 0.8584    |
 | Squares     | 10, ratio = 0.1    | Normal         | 0.8055  | 0.8627    |
