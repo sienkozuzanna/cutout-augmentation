@@ -364,7 +364,49 @@ Aby przepadać prawdziwość tych teorii przeprowadzony został eksperyment maj�
 
 Każda etykieta obrazu objętego augmentacją, jest zamieniana na normalną etykietę [0 0 … 0 1 0 … 0] gdzie zamiast wartości jeden będzie początkowo wartość 0.9999. Następnie te same eksperymenty zostaną przeprowadzone dla 0.999 oraz 0.99 w celu zobaczenia czy dalsze obniżanie wartości w soft labels przekłada się na obniżone wyniki. 
 
-Wyniki eksperymentów z podziałami na zbiory danych przedstawiono poniżej: 
+Wyniki eksperymentów z podziałami na zbiory danych przedstawiono poniżej:
+
+
+#### Zbiór danych: CIFAR
+
+| Cutout         | Soft label | Max size        | Acc Val + (old)     | Acc train + (old)   |
+|----------------|------------|-----------------|---------------------|---------------------|
+| Random Squares | 0.9999     | 10, ratio =0.05 | 0.7859 (0.7912)     | 0.8684 (0.8646)     |
+| Random Squares | 0.999      | 10, ratio =0.05 | 0.7937 (0.7912)     | 0.8653 (0.8646)     |
+| Random Squares | 0.99       | 10, ratio =0.05 | 0.8161 (0.7912)     | 0.8646 (0.8646)     |
+| Square         | 0.9999     | 5               | 0.8048 (0.7460)     | 0.8686 (0.8117)     |
+| Square         | 0.999      | 5               | 0.7845 (0.7460)     | 0.8686 (0.8117)     |
+| Square         | 0.99       | 5               | 0.8146 (0.7460)     | 0.8660 (0.8117)     |
+| Random Pixels  | 0.9999     | 0.05            | 0.8087 (0.4791)     | 0.8609 (0.5017)     |
+| Random Pixels  | 0.999      | 0.05            | 0.8065 (0.4791)     | 0.8669 (0.5017)     |
+| Random Pixels  | 0.99       | 0.05            | 0.8172 (0.4791)     | 0.8686 (0.5017)     |
+| Polygon        | 0.9999     | 0.05            | 0.8082 (0.7709)     | 0.8679 (0.8715)     |
+| Polygon        | 0.999      | 0.05            | 0.8044 (0.7709)     | 0.8727 (0.8715)     |
+| Polygon        | 0.99       | 0.05            | 0.8149 (0.7709)     | 0.8716 (0.8715)     |
+
+
+#### Zbiór danych: Fashion MNIST
+
+| Cutout         | Soft label | Max size        | Acc Val + (old)     | Acc train + (old)    |
+|----------------|-------------|------------------|----------------------|-----------------------|
+| Random Squares | 0.9999      | 10, ratio =0.05  | 0.9291 (0.7701)      | 0.9501 (0.7879)       |
+| Random Squares | 0.999       | 10, ratio =0.05  | 0.9267 (0.7701)      | 0.9476 (0.7879)       |
+| Random Squares | 0.99        | 10, ratio =0.05  | 0.8445 (0.7701)      | 0.8548 (0.7879)       |
+| Square         | 0.9999      | 5                | 0.9262 (0.8063)      | 0.9505 (0.7243)       |
+| Square         | 0.999       | 5                | 0.9267 (0.8063)      | 0.9491 (0.7243)       |
+| Square         | 0.99        | 5                | 0.8494 (0.8063)      | 0.8568 (0.7243)       |
+| Random Pixels  | 0.9999      | 0.05             | 0.9237 (0.7149)      | 0.9470 (0.6800)       |
+| Random Pixels  | 0.999       | 0.05             | 0.9226 (0.7149)      | 0.9460 (0.6800)       |
+| Random Pixels  | 0.99        | 0.05             | 0.8349 (0.7149)      | 0.8355 (0.6800)       |
+| Polygon        | 0.9999      | 0.05             | 0.9232 (0.9193)      | 0.9481 (0.9473)       |
+| Polygon        | 0.999       | 0.05             | 0.9033 (0.9193)      | 0.9479 (0.9473)       |
+| Polygon        | 0.99        | 0.05             | 0.8416 (0.9193)      | 0.8582 (0.9473)       |
+
+
+
+
+
+
 
 
 
