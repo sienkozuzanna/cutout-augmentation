@@ -384,6 +384,15 @@ Wyniki eksperymentów z podziałami na zbiory danych przedstawiono poniżej:
 | Polygon        | 0.999      | 0.05            | 0.8044 (0.7709)     | 0.8727 (0.8715)     |
 | Polygon        | 0.99       | 0.05            | 0.8149 (0.7709)     | 0.8716 (0.8715)     |
 
+Dla powyższego zbioru, accuracy zbioru walidacyjnego na stale ustalonych soft labels jest w większości przypadków wyższe, niż dla etykiet zależących od pola wycięcia. 
+
+Warty zauważenia jest fakt, że dla wyciecia, które sprawiało największe problemy - Random Pixels(0.05, soft) - udało się znacznie poprawić wynik i wyrównać go z wynikami innych modeli. Można wnioskować, że w tym przypadku, któraś z postawionych tez rzeczywiście powodowała obniżenie rezultatów.
+
+Ciekawe również jest to, że dla każdego kolejnego wycięcia najlepszy wyniki otrzymuje się dla miękkich etykiet ustalonych na wartość 0.99. Zmienianie etykiet o mniejsze wartości niż pola wycięte rzeczywiście poprawiły rezultaty, chociaż powyższy trend idzie w drugą stronę. Możliwe, że w eksperymecie nie zostały uwzględnione wystarczające duże wartości, które hipotetycznie doprowadziłyby do obniżenia tych wyników. Możliwa jest również trzecia przyczyna poprzednich gorszych wyników:
+#### Stabilność wartości etykiet sama w sobie zapewnia lepsze rezultaty.
+
+
+---
 
 #### Zbiór danych: Fashion MNIST
 
@@ -402,12 +411,11 @@ Wyniki eksperymentów z podziałami na zbiory danych przedstawiono poniżej:
 | Polygon        | 0.999       | 0.05             | 0.9033 (0.9193)      | 0.9479 (0.9473)       |
 | Polygon        | 0.99        | 0.05             | 0.8416 (0.9193)      | 0.8582 (0.9473)       |
 
+Z kolei dla zbioru Fashion MNIST wyniki zdają się jednak potwierdzać tezę o zbyt dużym pomniejszaniu wartości etykiet. W każdym modelu accuracy na podzbiorze walidacyjnym jest ewidentnie gorsza dla 0.99 niż dla 0.999/0.9999. 
 
+Mogłoby to wynikać z różnic w większościach zbiorów - dla większego objętościowo zbióru Fashion MNIST obniżenie wartości etykiet do 0.99 już robi różnicę, podczas gdy dla mniejszego zbioru CIFAR ta różnica byłaby widoczna dopiero po kolejnym obniżeniu wartości etykiety. Hipoteza ta miałaby podstawę w tym, że przy zbiórze z większą liczbą obrazów treningowych model automatycznie patrzy więcej razy na soft label. To z kolei prowadzi do sytuacji, że mniejsza zmiana w wartości soft labelu wywoła większą różnice w działaniu modelu.
 
-
-
-
-
+Następnie porównanie modeli korzystających z testowanych etykiet versus modeli z labelami zależącymi od pola. Jedynie dla cutout Polygon modele ze stałymi labelami nie wyszły lepiej, chociaż i tutaj różnica nie jest znacząca. Oczywiście, jak poprzednio, znaczy to znaczną poprawę w działaniu Random Pixels. 
 
 
  ## Podsumowanie
