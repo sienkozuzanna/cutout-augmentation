@@ -1,4 +1,5 @@
 # Metody cutout w połączeniu z soft labelingiem - badanie skuteczności
+Katarzyna Rogalska, Barbara Seweryn, Zuzanna Sieńko, Urszula Szczęsna, Michał Wietecki
 ## Wstęp
 Celem projektu było przeprowadzenie eksperymentów mających na celu zweryfikowanie skuteczność augmentacji danych w treningu modeli. Badaną metodą augmentacji były różne sposoby cutoutu zdjęć, czyli wycinania losowych obszarów danego obrazu w celu wprowadzenia dodatkowej trudności dla modelu. Wycinanie polegało na zastąpieniu pewnej części pikseli pikselami czarnymi lub o losowych kolorach. Ta część badania inspirowana była [opublikowanymi artykułami](#bibliografia)  dotyczącymi różnych metod cutoutu i ich modyfikacjach. Z dołączonych papierów wynika, że taki sposób augmentacji danych poprawia naukę modeli, stąd motywacja na zweryfikowanie tej tezy dla różnorodnych sposobów cutoutu w naszym projekcie.
 
@@ -350,7 +351,7 @@ Jeśli chodzi o zbiór walidacyjny, obniżenie accuracy zaobserwowane zostało *
  ## Dodatkowe eksperymenty i testy
  Opisane powyżej wyniki jasno wskazują, że zastosowana augmentacja w znacznej większości przypadków nie tylko nie poprawia wyników, lecz je dodatkowo pogarsza. Największym zaskoczeniem jednak był fakt, że wpływ użycia **soft labels** jest tak negatywny:
 
-W zbiorze CIFAR zmienienie etykiet skutkowało w każdorazowym obniżeniu accuracy, przy porównaniu do modelu odpowiadającego mu - stosującego ten sam cutout z identycznymi parametrami. Największy spadek zanotowano dla Pixels(0.05, soft), gdzie wynik jest prawie dwukrotnie niższy. 
+W zbiorze CIFAR zmienienie etykiet skutkowało każdorazowym obniżeniem accuracy, przy porównaniu do odpowiadającego mu - stosującego ten sam cutout z identycznymi parametrami. Największy spadek zanotowano dla Pixels(0.05, soft), gdzie wynik jest prawie dwukrotnie niższy. 
 
 Patrząc na zbiór Fashion Mnist wyniki walidacji modelów wspomaganych augmentacją są w każdym przypadku gorsze niż model bazowy. Jeśli chodzi o zachowanie rezultatów po zmianie etykiet to sytuacja jest trochę inna niż w przypadku poprzedniego zbioru. Modele z soft labels w dwóch przypadkach pogarszają, a w dwóch przypadkach polepszają wyniki w porównaniu z ich odpowiadającymi modelami. Jednak obniżenia są zdecydowanie bardziej znaczące - średni wzrost accuracy walidacji w tym przypadku to 2,9%, podczas gdy średni spadek to aż 16,6%. Można więc zatem uznać, że działanie soft labels nie jest pozytywne.
 
@@ -360,9 +361,9 @@ Odpowiedź na pytanie dlaczego tak się dzieje nie jest znana. Etykiety obrazów
 
 ### Eksperyment: Soft Labels nie zależą od wyciętego pola.
 
-Aby przepadać prawdziwość tych teorii przeprowadzony został eksperyment mający na celu wytrenowanie modeli korzystając ze stałych labeli, zmniejszanych o znacznie mniejsze wartości. Przebada to obydwie te teorie naraz, nie pozwalając na wyżej wspomniane niedokładności numeryczne, przy jednoczesnym pomniejszaniu etykiet o niezbyt duże liczby.
+Aby zweryfikować prawdziwość tych teorii przeprowadzony został eksperyment mający na celu wytrenowanie modeli korzystając ze stałych labeli, zmniejszanych o znacznie mniejsze wartości. Przebada to obydwie te teorie naraz, nie pozwalając na wyżej wspomniane niedokładności numeryczne, przy jednoczesnym pomniejszaniu etykiet o niezbyt duże wartości.
 
-Każda etykieta obrazu objętego augmentacją, jest zamieniana na normalną etykietę [0 0 … 0 1 0 … 0] gdzie zamiast wartości jeden będzie początkowo wartość 0.9999. Następnie te same eksperymenty zostaną przeprowadzone dla 0.999 oraz 0.99 w celu zobaczenia czy dalsze obniżanie wartości w soft labels przekłada się na obniżone wyniki. 
+Każda etykieta obrazu objętego augmentacją, jest zamieniana na normalną etykietę [0 0 … 0 1 0 … 0] gdzie zamiast wartości jeden będzie początkowo wartość 0.9999. Następnie te same eksperymenty zostaną przeprowadzone dla 0.999 oraz 0.99 w celu zobaczenia czy dalsze obniżanie wartości w soft labels przekłada się na pogorszenie wyników. 
 
 Wyniki eksperymentów z podziałami na zbiory danych przedstawiono poniżej:
 
@@ -413,13 +414,15 @@ Ciekawe również jest to, że dla każdego kolejnego wycięcia najlepszy wyniki
 
 Z kolei dla zbioru Fashion MNIST wyniki zdają się jednak potwierdzać tezę o zbyt dużym pomniejszaniu wartości etykiet. W każdym modelu accuracy na podzbiorze walidacyjnym jest ewidentnie gorsza dla 0.99 niż dla 0.999/0.9999. 
 
-Mogłoby to wynikać z różnic w większościach zbiorów - dla większego objętościowo zbióru Fashion MNIST obniżenie wartości etykiet do 0.99 już robi różnicę, podczas gdy dla mniejszego zbioru CIFAR ta różnica byłaby widoczna dopiero po kolejnym obniżeniu wartości etykiety. Hipoteza ta miałaby podstawę w tym, że przy zbiórze z większą liczbą obrazów treningowych model automatycznie patrzy więcej razy na soft label. To z kolei prowadzi do sytuacji, że mniejsza zmiana w wartości soft labelu wywoła większą różnice w działaniu modelu.
+Mogłoby to wynikać z różnic w wielkościach zbiorów - dla większego objętościowo zbióru Fashion MNIST obniżenie wartości etykiet do 0.99 już robi różnicę, podczas gdy dla mniejszego zbioru CIFAR ta różnica byłaby widoczna dopiero po kolejnym obniżeniu wartości etykiety. Hipoteza ta miałaby podstawę w tym, że przy zbiórze z większą liczbą obrazów treningowych model automatycznie patrzy więcej razy na soft label. To z kolei prowadzi do sytuacji, że mniejsza zmiana w wartości soft labelu wywoła większą różnice w działaniu modelu.
 
 Następnie porównanie modeli korzystających z testowanych etykiet versus modeli z labelami zależącymi od pola. Jedynie dla cutout Polygon modele ze stałymi labelami nie wyszły lepiej, chociaż i tutaj różnica nie jest znacząca. Oczywiście, jak poprzednio, znaczy to znaczną poprawę w działaniu Random Pixels. 
 
+Ostatnim krokiem eksperymentu była próba zmodyfikowania klas cutoutu tak, aby miękkie etykiety zależące od pola wyciętej powierzchni były zaokrąglone do kilku miejsc po przecinku. Zgodnie z powyższymi eksperymentami wyeliminowałoby to hipotezę o problemach numerycznych związanych z dużą częścią dziesiętną. Po przetrenowaniu kilka próbnych modeli nie zaobserwowano jednak poprawy względem początkowo zaprezentowanej tabeli, dlatego na tym etapie zakończono dalsze badania tego zjawiska.
+
 
  ## Podsumowanie
- (Kasia moze napisac na koniec)
+ W przeprowadzonym eksperymencie udało się zaimplementować 5 różnych metod augmentacji obrazów typu Cutout. Każda z metod przyjmowała parametry określające, czy wycięta część obrazu ma być czarna czy kolorowa oraz czy podczas przeprowadzenia augmentacji etykieta klasy ma zostać zmodyfikowana zgodnie z ideą Soft Labelingu. Działanie wspomnianych metod przetestowano na 2 zbiorach danych trenując sieć neuronową w różnych konfiguracjach łącznie 30 razy. W pierwszej kolejności zwrócono uwagę na fakt dość nieznacznych zmian w wynikach treningu oraz walidacji po zastosowaniu metod Cutoutu bez zmiany etykiet. Rzadko kiedy wartości accuracy były gorsze niż w modelu bazowym - zazwyczaj augmentacja poprawiała wyniki o kilka setnych procenta lub wcale na nie nie wpływała. W dalszej analizie napotkano anomalie związaną ze znacznym pogorszeniem accuracy modeli uczonych na danych z miękkimi etykietami, co poddano dalszym testom i eksperymentom w celu odnalezienia przyczyny takiego zjawiska. Finalnie nie udało się jednoznacznie odpowiedzieć na pytanie, dlaczego Cutout w połączeniu z Soft Labeling daje tak niestabilne wyniki z różnicami względem modelu bazowego dochodzącymi czasem nawet do 20 punktów procentowych. Możliwe przyczyny tego zjawiska, które udało się sfromułować to zaszyte w klasie sieci neuronowej problemy numeryczne lub stabilność całkowitych etykiet sama w sobie zapewniająca lepsze reultaty. Na tym etapie projekt został zakończony. W przyszłości rozwój badania mógłby być nastawiony na więcej eksperymentów, użycie modeli z kilkukrotnym wywoływaniem jednej konfuguracji oraz dogłębną diagnostyką napotkanej anomalii związanej z miękkimi etykietami, które intuicyjnie powinny pozytywnie wpływać na testowanie modeli.
 
  ## Bibliografia
  1. ["Colorful Cutout"](https://arxiv.org/html/2403.20012v1 )
